@@ -2,41 +2,50 @@
 #include <Adafruit_NeoPixel.h>
 
 #define PIN        5 // On Trinket or Gemma, suggest changing this to 1
-#define NUMPIXELS 186 // Popular NeoPixel ring size
+#define NUMPIXELS 109 // Popular NeoPixel ring size
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-#define DELAYVAL 324*5 // Time (in milliseconds) to pause between pixels
+const long COUNTDOWN_TIME = (5l*60l*407l);
+
+long startTime;
 
 void setup() {
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.begin();
+  pixels.clear();
+  startTime = millis();
+  Serial.begin(9600);
 }
 
 
 void loop() {
-  pixels.clear(); // Set all pixel colors to 'off'
+  long time = millis();
+  long currentTime = time-startTime;
+  //Serial.println(currentTime);
+  if (currentTime<=COUNTDOWN_TIME)
+  {
+    //Serial.println("A");
+    int ledProgress = map(currentTime, 0, COUNTDOWN_TIME, 0, NUMPIXELS);
+    //Serial.println(ledProgress);
 
-  // The first NeoPixel in a strand is #0, second is 1, all the way up
-  // to the count of pixels minus one.
-  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    // Here we're using a moderately bright green color:
-    pixels.setPixelColor(i, pixels.Color(0, 150, 0));
-
-    pixels.show();   // Send the updated pixel colors to the hardware.
-    delay(DELAYVAL); // Pause before next pass through loop
-  }
-
-
-  for(int f=0; f<30; f++) {
-    for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-      pixels.setPixelColor(i, pixels.Color(150, 0, 0));
+    for(int i=0; i<NUMPIXELS; i++) {
+      if (i<=ledProgress)
+      {
+        pixels.setPixelColor(NUMPIXELS-i-1, pixels.Color(0, 255, 0));
+      }
     }
+    
     pixels.show();
-    delay(200);
-    pixels.clear();
-    pixels.show();
-    delay(200);
+  } else {
+    while (true) {
+      for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+        pixels.setPixelColor(i, pixels.Color(255, 0, 0));
+      }
+      pixels.show();
+      delay(300);
+      pixels.clear();
+      pixels.show();
+      delay(300);
+    }
   }
 }
